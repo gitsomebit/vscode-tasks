@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Say Hello",
+      "type": "shell",
+      "command": "echo Hello, World!",
+      "options": {
+        "statusbar": {
+          "label": "👋 Hello",
+          "color": "#00ff00"
+        }
+      },
+      "problemMatcher": []
+    },
+  ]
+}
