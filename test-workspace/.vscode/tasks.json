@@ -1,17 +1,171 @@
 {
   "version": "2.0.0",
   "tasks": [
+
+    // a simple tasked not using plugin specific functionality
     {
-      "label": "Say Hello",
+			"label": "Simple",
+			"type": "shell",
+			"command": "echo",
+			"args": ["'simple was pressed'"],
+      // omitting group (is an ungrouped task)
+		},
+
+    {
+      "label": "a", // value does not matter when options/label is given. Must not be ""
       "type": "shell",
-      "command": "echo Hello, World!",
+      "command": "echo 'Custom Item 🔥 was pressed'",
       "options": {
         "statusbar": {
-          "label": "👋 Hello",
-          "color": "#00ff00"
-        }
+          "label": "$(refresh) Custom Item 🔥",
+          "color": "#ff7b00",
+          "detail": "tooltip for statusbar",
+          // omitting group (is an ungrouped task)
+        },
       },
-      "problemMatcher": []
+    },
+
+    {
+      "label": "Empty Group",
+      "type": "shell",
+      "command": "echo 'Empty Group was pressed'",
+      "options": {
+        "statusbar": {
+          "group": "", // empty does not count as a group (is ungrouped task)
+        },
+      },
+    },
+
+    // hidden tasks
+    {
+      "label": "",
+      "type": "shell",
+      "command": "echo 'Hidden Item was pressed'",
+      "options": {
+        "statusbar": {
+          "hide" : true, // hidden items are not displayed in StatusBar
+        },
+      },
+    },
+    {
+      "label": "Hidden Item grouped",
+      "type": "shell",
+      "command": "echo 'Hidden Item grouped was pressed'",
+      "options": {
+        "statusbar": {
+          "hide" : true,
+          "group": "👋 hello", // hidden items are also not displayed in group windows
+        },
+      },
+    },
+
+    // 2 member group
+    {
+      "label": "Hello 1", // value does not matter when options/label is given. Must not be ""
+      "type": "shell",
+      "command": "echo '👋 Hello 1 was pressed'",
+      "options": {
+        "statusbar": {
+          "label": "👋 Hello 1",
+          "color": "#fbff00", // the first item of a group can style the color of the group button
+          "group": "👋 hello group",
+        },
+      },
+    },
+    {
+      "label": "Hello 2", // value does not matter when options/label is given. Must not be ""
+      "type": "shell",
+      "command": "echo '👋 Hello 2 was pressed'",
+      "options": {
+        "statusbar": {
+          "label": "👋 Hello 2",
+          "color": "#00aeff", // ignored, since not first member of group
+          "group": "👋 hello group",
+        },
+      },
+    },
+
+    // subgroups
+    // are divided with `/`
+    {
+      "label": "Build Frontend",
+      "type": "shell",
+      "command": "echo 'Build Frontend was pressed'",
+      "options": {
+        "statusbar": {
+          "label": "🏗️ Build Frontend",
+          "group": "subgroup/frontend", // displayed as `subgroup` in StatusBar
+        }
+      }
+    },
+    {
+      "label": "Build Frontend",
+      "type": "shell",
+      "command": "echo 'Build Frontend was pressed'",
+      "options": {
+        "statusbar": {
+          "label": "🏗️ Build Frontend",
+          "group": "//subgroup///frontend", // displayed as `subgroup` in StatusBar
+        }
+      }
+    },
+    {
+      "label": "Build React App",
+      "command": "echo 'Build React App was pressed'",
+      "options": {
+        "statusbar": {
+          "label": "$(refresh) Build React",
+          "group": "subgroup/frontend/react", // displayed as `subgroup` in StatusBar
+					"detail": "Regenerates all templ files",
+        }
+      }
+    },
+    {
+      "label": "Build Vue App",
+      "command": "echo 'Build Vue App was pressed'",
+      "options": {
+        "statusbar": {
+          "label": "Build Vue",
+          "group": "subgroup/frontend/vue" // displayed as `subgroup` in StatusBar
+        }
+      }
+    },
+    {
+      "label": "Build API",
+      "command": "echo 'Build API was pressed'",
+      "options": {
+        "statusbar": {
+          "label": "Build API",
+          "group": "subgroup/backend/api" // displayed as `subgroup` in StatusBar
+        }
+      }
+    },
+
+    // single member group are displayed as task buttun in StatusBar (do not get a window)
+    {
+      "label": "Single Member Group",
+      "type": "shell",
+      "command": "echo 'Single Member Group was pressed'",
+      "options": {
+        "statusbar": {
+          "label": "Single Member Group",
+          "color": "#00ff00",
+          "group": "Single Member Group",
+        },
+      },
+    },
+    // single member group as subgroup
+    {
+      "label": "Single Member SubGroup",
+      "type": "shell",
+      "command": "echo 'Single Member SubGroup was pressed'",
+      "options": {
+        "statusbar": {
+          "label": "Single Member SubGroup",
+          "color": "#00ff00",
+          "group": "group/subgroup1/subgroup2"
+        }
+      }
     },
   ]
 }
