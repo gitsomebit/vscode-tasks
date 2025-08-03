@@ -699,10 +699,8 @@ function loadTasks() {
             openUpdateStatusBar();
         }
         else {
-            // Even if no tasks, show the master tasks button
-            const masterOnly = [createMasterTasksStatusBar()];
-            syncStatusBar(masterOnly);
-            openUpdateStatusBar();
+            cleanStatusBar();
+            closeUpdateStatusBar();
         }
     });
 }
