@@ -116,7 +116,6 @@
         "statusbar": {
           "label": "$(refresh) Build React",
           "group": "subgroup/frontend/react", // displayed as `subgroup` in StatusBar
-					"detail": "Regenerates all templ files",
         }
       }
     },
