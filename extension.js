@@ -88,7 +88,7 @@ function cleanStatusBar() {
 function deactivate() {
     closeUpdateStatusBar();
     cleanStatusBar();
-    
+
     // Clean up all active panels
     for (const [panelKey, panel] of activePanels) {
         try {
@@ -100,7 +100,7 @@ function deactivate() {
         }
     }
     activePanels.clear();
-    
+
     if (outputChannel !== undefined) {
         outputChannel.dispose();
     }
@@ -238,14 +238,14 @@ function parseGroupHierarchy(groupString) {
     if (!groupString || typeof groupString !== 'string') {
         return null;
     }
-    
+
     // Split by forward slash and clean up each part
     const parts = groupString.split('/').map(part => part.trim()).filter(part => part.length > 0);
-    
+
     if (parts.length === 0) {
         return null;
     }
-    
+
     return {
         fullPath: groupString,
         parts: parts,
@@ -443,7 +443,7 @@ function createSelectStatusBar() {
 function buildGroupTree(memoryStatusBarArray) {
     const groupedTasks = [];
     const ungroupedTasks = [];
-    
+
     // Separate grouped and ungrouped tasks
     for (const statusBarItem of memoryStatusBarArray) {
         if (statusBarItem.group) {
@@ -452,14 +452,14 @@ function buildGroupTree(memoryStatusBarArray) {
             ungroupedTasks.push(statusBarItem);
         }
     }
-    
+
     if (groupedTasks.length === 0) {
         return ungroupedTasks;
     }
-    
+
     // Build tree structure
     const tree = new Map();
-    
+
     // First pass: collect all tasks by their root groups
     for (const task of groupedTasks) {
         const hierarchy = parseGroupHierarchy(task.group);
@@ -475,17 +475,17 @@ function buildGroupTree(memoryStatusBarArray) {
             tree.get(rootGroup).tasks.push(task);
         }
     }
-    
+
     // Build the hierarchical tree for each root group
     for (const [rootName, rootGroup] of tree) {
         buildSubgroupTree(rootGroup, rootGroup.tasks);
     }
-    
+
     const result = [];
-    
+
     // Add ungrouped tasks first
     result.push(...ungroupedTasks);
-    
+
     // Process each root group
     for (const [rootName, rootGroup] of tree) {
         // Check if group has only one task
@@ -521,7 +521,7 @@ function buildGroupTree(memoryStatusBarArray) {
             });
         }
     }
-    
+
     return result;
 }
 
@@ -529,7 +529,7 @@ function buildSubgroupTree(parentGroup, tasks) {
     // Group tasks by their next level path segment relative to parent
     const subgroupMap = new Map();
     const directTasks = [];
-    
+
     for (const task of tasks) {
         const hierarchy = parseGroupHierarchy(task.group);
         if (hierarchy && hierarchy.parts.length > 1) {
@@ -548,7 +548,7 @@ function buildSubgroupTree(parentGroup, tasks) {
             directTasks.push(task);
         }
     }
-    
+
     // Build subgroup tree recursively
     for (const [subgroupName, subgroupTasks] of subgroupMap) {
         const fullSubgroupPath = parentGroup.name === subgroupName ? subgroupName : `${parentGroup.name}/${subgroupName}`;
@@ -557,9 +557,9 @@ function buildSubgroupTree(parentGroup, tasks) {
             tasks: subgroupTasks,
             subgroups: new Map()
         };
-        
+
         parentGroup.subgroups.set(subgroupName, subgroup);
-        
+
         // Recursively build deeper levels
         buildSubgroupTree(subgroup, subgroupTasks);
     }
@@ -631,7 +631,7 @@ function matchTasksInScope(memoryStatusBarArray, tasks, runningTasks, config) {
         const backgroundColor = getAttribute(taskObject, taskInfo, "backgroundColor", isRunning);
         const filePattern = getAttribute(taskObject, taskInfo, "filePattern");
         const group = getTaskGroup(taskInfo);
-        
+
         memoryStatusBarArray.push({
             text: label,
             tooltip: convertTooltip(detail),
@@ -746,7 +746,7 @@ function refreshTask(task) {
         }
         if (statusBar.isGroup) {
             // Check if task is in group
-            return statusBar.groupTasks && statusBar.groupTasks.some(groupTask => 
+            return statusBar.groupTasks && statusBar.groupTasks.some(groupTask =>
                 groupTask.command.arguments[0]._id === task._id
             );
         }
@@ -756,7 +756,7 @@ function refreshTask(task) {
         const statusBar = memoryStatusBarArray[0];
         if (found.isGroup && found.groupTasks) {
             // Update task within group
-            const taskInGroup = found.groupTasks.find(groupTask => 
+            const taskInGroup = found.groupTasks.find(groupTask =>
                 groupTask.command.arguments[0]._id === task._id
             );
             if (taskInGroup) {
@@ -785,10 +785,10 @@ function showAllTasks() {
     vscode.tasks.fetchTasks().then((allTasks) => {
         const workspaceTasks = allTasks.filter(task => task.source === "Workspace");
         const allTaskItems = matchAllTasks(workspaceTasks);
-        
+
         // Build complete hierarchical tree
         const masterTree = buildMasterTaskTree(allTaskItems);
-        
+
         // Show in webview panel
         showMasterTasksPanel(masterTree);
     });
@@ -800,7 +800,7 @@ function buildMasterTaskTree(allTaskItems) {
         groups: new Map(),
         ungroupedTasks: []
     };
-    
+
     // Separate grouped and ungrouped tasks
     for (const task of allTaskItems) {
         if (task.group) {
@@ -812,19 +812,19 @@ function buildMasterTaskTree(allTaskItems) {
             tree.ungroupedTasks.push(task);
         }
     }
-    
+
     return tree;
 }
 
 function addTaskToTree(tree, hierarchy, task) {
     let currentLevel = tree.groups;
     let currentPath = "";
-    
+
     // Navigate/create the tree structure
     for (let i = 0; i < hierarchy.parts.length; i++) {
         const part = hierarchy.parts[i];
         currentPath = currentPath ? `${currentPath}/${part}` : part;
-        
+
         if (!currentLevel.has(part)) {
             currentLevel.set(part, {
                 name: part,
@@ -833,14 +833,14 @@ function addTaskToTree(tree, hierarchy, task) {
                 subgroups: new Map()
             });
         }
-        
+
         const group = currentLevel.get(part);
-        
+
         // If this is the final level, add the task
         if (i === hierarchy.parts.length - 1) {
             group.tasks.push(task);
         }
-        
+
         // Move to next level
         currentLevel = group.subgroups;
     }
@@ -858,16 +858,16 @@ function createOrFocusPanel(panelKey, title, createPanelFn) {
             activePanels.delete(panelKey);
         }
     }
-    
+
     // Create new panel
     const panel = createPanelFn();
     activePanels.set(panelKey, panel);
-    
+
     // Set up common disposal handling
     panel.onDidDispose(() => {
         activePanels.delete(panelKey);
     });
-    
+
     return panel;
 }
 
@@ -877,7 +877,7 @@ function createWebviewPanel(id, title, options = {}) {
         retainContextWhenHidden: true,
         localResourceRoots: []
     };
-    
+
     return vscode.window.createWebviewPanel(
         id,
         title,
@@ -896,7 +896,7 @@ function setupPanelMessageHandling(panel, panelKey, messageHandlers) {
             panel.dispose();
             return;
         }
-        
+
         const handler = messageHandlers[message.command];
         if (handler) {
             handler(message);
@@ -916,9 +916,9 @@ function generateTaskButton(task, index, indentLevel = 0) {
     const label = task.text.replace(/\$\([^)]+\)\s*/, '');
     const tooltip = task.tooltip ? task.tooltip.value || '' : '';
     const indent = indentLevel * 20;
-    
+
     return `
-        <button class="task-button" onclick="executeTask(${index})" 
+        <button class="task-button" onclick="executeTask(${index})"
                 title="${tooltip}" style="margin-left: ${indent}px;">
             <span class="task-icon">•</span>
             <span class="task-label">${label}</span>
@@ -929,10 +929,10 @@ function generateTaskButton(task, index, indentLevel = 0) {
 function generateGroupButton(groupName, groupPath, taskCount, level = 0) {
     const indent = level * 20;
     const groupId = `group-${groupPath.replace(/[^a-zA-Z0-9]/g, '-')}-${level}`;
-    
+
     return `
         <div class="group-container" style="margin-left: ${indent}px;">
-            <button class="group-header" onclick="toggleGroup('${groupId}')" 
+            <button class="group-header" onclick="toggleGroup('${groupId}')"
                     title="${groupPath}">
                 <span class="expand-icon" id="icon-${groupId}">▶</span>
                 <span class="group-name">${groupName}/</span>
@@ -947,7 +947,7 @@ function getCommonJavaScript(dataArray, dataVariableName = 'allTasks') {
     return `
         const vscode = acquireVsCodeApi();
         const ${dataVariableName} = ${JSON.stringify(dataArray)};
-        
+
         function executeTask(index) {
             if (index >= 0 && index < ${dataVariableName}.length) {
                 vscode.postMessage({
@@ -956,11 +956,11 @@ function getCommonJavaScript(dataArray, dataVariableName = 'allTasks') {
                 });
             }
         }
-        
+
         function toggleGroup(id) {
             const content = document.getElementById('content-' + id);
             const icon = document.getElementById('icon-' + id);
-            
+
             if (content && icon) {
                 if (content.style.display === 'none') {
                     content.style.display = 'block';
@@ -971,11 +971,11 @@ function getCommonJavaScript(dataArray, dataVariableName = 'allTasks') {
                 }
             }
         }
-        
+
         window.addEventListener('load', () => {
             document.body.focus();
         });
-        
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 vscode.postMessage({ command: 'close' });
@@ -986,11 +986,11 @@ function getCommonJavaScript(dataArray, dataVariableName = 'allTasks') {
 
 function showMasterTasksPanel(masterTree) {
     const panelKey = 'masterTasksPanel';
-    
-    const panel = createOrFocusPanel(panelKey, 'All Tasks', () => 
+
+    const panel = createOrFocusPanel(panelKey, 'All Tasks', () =>
         createWebviewPanel('masterTasksPanel', 'All Tasks')
     );
-    
+
     if (!panel) return; // Panel already exists and was focused
 
     // Collect all tasks for execution mapping
@@ -1007,30 +1007,30 @@ function showMasterTasksPanel(masterTree) {
     // Generate tree HTML
     function generateMasterTreeHTML(groups, level = 0) {
         let html = '';
-        
+
         for (const [groupName, group] of groups) {
             const hasSubgroups = group.subgroups.size > 0;
             const hasDirectTasks = group.tasks.length > 0;
-            
+
             if (hasSubgroups || hasDirectTasks) {
                 const taskCount = group.tasks.length + countNestedTasks(group.subgroups);
                 html += generateGroupButton(groupName, group.fullPath, taskCount, level);
-                
+
                 // Direct tasks in this group
                 for (const task of group.tasks) {
                     const taskIndex = allTasks.indexOf(task);
                     html += generateTaskButton(task, taskIndex, level + 1);
                 }
-                
+
                 // Recursive subgroups
                 html += generateMasterTreeHTML(group.subgroups, level + 1);
                 html += '</div></div>';
             }
         }
-        
+
         return html;
     }
-    
+
     function countNestedTasks(groups) {
         let count = 0;
         for (const [_, group] of groups) {
@@ -1063,10 +1063,10 @@ function showMasterTasksPanel(masterTree) {
             <div class="header">All Tasks</div>
             ${generateMasterTreeHTML(masterTree.groups)}
             ${ungroupedHTML}
-            
+
             <script>
                 ${getCommonJavaScript(allTasks)}
-                
+
                 // Auto-expand first level on load
                 window.addEventListener('load', () => {
                     const firstLevelGroups = document.querySelectorAll('[id^="content-group-"][id$="-0"]');
@@ -1095,11 +1095,11 @@ function showMasterTasksPanel(masterTree) {
 
 function showSelectTasks(items) {
     const panelKey = 'taskSelectDropdown';
-    
-    const panel = createOrFocusPanel(panelKey, 'Select Tasks', () => 
+
+    const panel = createOrFocusPanel(panelKey, 'Select Tasks', () =>
         createWebviewPanel('taskSelectDropdown', 'Select Tasks')
     );
-    
+
     if (!panel) return;
 
     // Generate HTML for all tasks including groups
@@ -1107,10 +1107,10 @@ function showSelectTasks(items) {
         const label = item.text.replace(/\$\([^)]+\)\s*/, '');
         const tooltip = item.tooltip ? item.tooltip.value || '' : '';
         const isGroup = item.isGroup;
-        
+
         return `
-            <button class="task-button ${isGroup ? 'group-button' : ''}" 
-                    onclick="${isGroup ? `showGroup(${index})` : `executeTask(${index})`}" 
+            <button class="task-button ${isGroup ? 'group-button' : ''}"
+                    onclick="${isGroup ? `showGroup(${index})` : `executeTask(${index})`}"
                     title="${tooltip}">
                 <span class="task-label">${label}${isGroup ? ' ▼' : ''}</span>
                 ${tooltip ? `<span class="task-description">${tooltip}</span>` : ''}
@@ -1131,7 +1131,7 @@ function showSelectTasks(items) {
             ${taskButtons}
             <script>
                 ${getCommonJavaScript(items)}
-                
+
                 function showGroup(index) {
                     vscode.postMessage({
                         command: 'showGroup',
@@ -1174,33 +1174,33 @@ function showSelectTasks(items) {
 
 function showHierarchicalGroupTasks(groupTree) {
     const panelKey = `hierarchicalTaskGroup-${groupTree.name.replace(/[^a-zA-Z0-9]/g, '-')}`;
-    
-    const panel = createOrFocusPanel(panelKey, groupTree.name, () => 
+
+    const panel = createOrFocusPanel(panelKey, groupTree.name, () =>
         createWebviewPanel('hierarchicalTaskGroup', groupTree.name)
     );
-    
+
     if (!panel) return;
 
     // Generate HTML for hierarchical view
     function generateTreeHTML(group, level = 0) {
         let html = '';
-        
+
         // Add direct tasks at this level
         const directTasks = group.tasks.filter(task => {
             const hierarchy = parseGroupHierarchy(task.group);
             return hierarchy && hierarchy.parts.length === level + 1;
         });
-        
+
         for (const task of directTasks) {
             const taskIndex = group.tasks.indexOf(task);
             html += generateTaskButton(task, taskIndex, level);
         }
-        
+
         // Add subgroups
         for (const [subgroupName, subgroup] of group.subgroups) {
             html += `
                 <div class="subgroup" style="margin-left: ${level * 20}px;">
-                    <button class="subgroup-header" onclick="toggleSubgroup('${subgroupName}-${level}')" 
+                    <button class="subgroup-header" onclick="toggleSubgroup('${subgroupName}-${level}')"
                             title="Expand/Collapse ${subgroupName}">
                         <span class="expand-icon" id="icon-${subgroupName}-${level}">▶</span>
                         <span class="subgroup-name">${subgroupName}/</span>
@@ -1211,7 +1211,7 @@ function showHierarchicalGroupTasks(groupTree) {
                 </div>
             `;
         }
-        
+
         return html;
     }
 
@@ -1226,14 +1226,14 @@ function showHierarchicalGroupTasks(groupTree) {
         <body>
             <div class="header">${groupTree.name}:</div>
             ${generateTreeHTML(groupTree)}
-            
+
             <script>
                 ${getCommonJavaScript(groupTree.tasks, 'groupTasks')}
-                
+
                 function toggleSubgroup(id) {
                     const content = document.getElementById('content-' + id);
                     const icon = document.getElementById('icon-' + id);
-                    
+
                     if (content.style.display === 'none') {
                         content.style.display = 'block';
                         icon.classList.add('expanded');
@@ -1264,11 +1264,11 @@ function showGroupTasks(groupTasks, groupName = 'Tasks') {
 
     // const panelKey = `taskGroupDropdown-${groupName}`;
     const panelKey = `taskGroupDropdown-${groupName.replace(/[^a-zA-Z0-9]/g, '-')}`;
-    
-    const panel = createOrFocusPanel(panelKey, groupName, () => 
+
+    const panel = createOrFocusPanel(panelKey, groupName, () =>
         createWebviewPanel('taskGroupDropdown', groupName)
     );
-    
+
     if (!panel) return;
 
     // Generate HTML for the dropdown
@@ -1385,14 +1385,14 @@ function activate(context) {
                 runTask(groupTasks[0].command.arguments[0]);
                 return;
             }
-            
+
             // Extract group name from the first task in the group
             let groupName = 'Tasks';
             if (groupTasks.length > 0 && groupTasks[0].group) {
                 const groupPath = groupTasks[0].group;
                 groupName = getGroupDisplayName(groupPath);
             }
-            
+
             // If we have a tree structure, show hierarchical view
             if (groupTree) {
                 showHierarchicalGroupTasks(groupTree);

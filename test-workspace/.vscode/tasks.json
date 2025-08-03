@@ -38,7 +38,7 @@
 
     // hidden tasks
     {
-      "label": "",
+      "label": "hidden",
       "type": "shell",
       "command": "echo 'Hidden Item was pressed'",
       "options": {
