@@ -1504,40 +1504,6 @@ const panelCSS = `
     .ungrouped-section {
       margin-top: 16px;
     }
-
-    // .task-description {
-    //     font-size: 0.9em;
-    //     color: var(--vscode-descriptionForeground);
-    //     margin-top: 2px;
-    // }
-    // .task-button:hover {
-    //     background: var(--vscode-list-hoverBackground);
-    // }
-    // .subgroup-header {
-    //     display: block;
-    //     width: calc(100% - 20px);
-    //     padding: 4px 12px;
-    //     margin: 2px 0;
-    //     background: transparent;
-    //     border: none;
-    //     color: var(--vscode-foreground);
-    //     cursor: pointer;
-    //     text-align: left;
-    //     border-radius: 2px;
-    //     font-weight: 500;
-    // }
-    // .subgroup-header:hover {
-    //     background: var(--vscode-list-hoverBackground);
-    // }
-    // .subgroup-name {
-    //     color: var(--vscode-symbolIcon-folderForeground);
-    // }
-    // .subgroup-content {
-    //     overflow: hidden;
-    //     transition: all 0.2s ease;
-    // }
-
-
     .subgroup-header {
         display: block;
         width: calc(100% - 20px);
