@@ -1016,14 +1016,15 @@ function showMasterTasksPanel(masterTree) {
                 const taskCount = group.tasks.length + countNestedTasks(group.subgroups);
                 html += generateGroupButton(groupName, group.fullPath, taskCount, level);
 
+                // Recursive subgroups
+                html += generateMasterTreeHTML(group.subgroups, level + 1);
+
                 // Direct tasks in this group
                 for (const task of group.tasks) {
                     const taskIndex = allTasks.indexOf(task);
                     html += generateTaskButton(task, taskIndex, level + 1);
                 }
 
-                // Recursive subgroups
-                html += generateMasterTreeHTML(group.subgroups, level + 1);
                 html += '</div></div>';
             }
         }
@@ -1185,6 +1186,22 @@ function showHierarchicalGroupTasks(groupTree) {
     function generateTreeHTML(group, level = 0) {
         let html = '';
 
+				// Add subgroups
+				for (const [subgroupName, subgroup] of group.subgroups) {
+						html += `
+								<div class="subgroup" style="margin-left: ${level * 20}px;">
+										<button class="subgroup-header" onclick="toggleSubgroup('${subgroupName}-${level}')"
+														title="Expand/Collapse ${subgroupName}">
+												<span class="expand-icon" id="icon-${subgroupName}-${level}">▶</span>
+												<span class="subgroup-name">${subgroupName}/</span>
+										</button>
+										<div class="subgroup-content" id="content-${subgroupName}-${level}" style="display: none;">
+												${generateTreeHTML(subgroup, level + 1)}
+										</div>
+								</div>
+						`;
+				}
+
         // Add direct tasks at this level
         const directTasks = group.tasks.filter(task => {
             const hierarchy = parseGroupHierarchy(task.group);
@@ -1196,21 +1213,6 @@ function showHierarchicalGroupTasks(groupTree) {
             html += generateTaskButton(task, taskIndex, level);
         }
 
-        // Add subgroups
-        for (const [subgroupName, subgroup] of group.subgroups) {
-            html += `
-                <div class="subgroup" style="margin-left: ${level * 20}px;">
-                    <button class="subgroup-header" onclick="toggleSubgroup('${subgroupName}-${level}')"
-                            title="Expand/Collapse ${subgroupName}">
-                        <span class="expand-icon" id="icon-${subgroupName}-${level}">▶</span>
-                        <span class="subgroup-name">${subgroupName}/</span>
-                    </button>
-                    <div class="subgroup-content" id="content-${subgroupName}-${level}" style="display: none;">
-                        ${generateTreeHTML(subgroup, level + 1)}
-                    </div>
-                </div>
-            `;
-        }
 
         return html;
     }
