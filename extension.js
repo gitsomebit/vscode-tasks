@@ -482,43 +482,54 @@ function buildGroupTree(memoryStatusBarArray) {
     }
 
     const result = [];
+    const addedGroups = new Set();
 
-    // Add ungrouped tasks first
-    result.push(...ungroupedTasks);
-
-    // Process each root group
-    for (const [rootName, rootGroup] of tree) {
-        // Check if group has only one task
-        if (rootGroup.tasks.length === 1) {
-            // Show the individual task instead of a group button
-            const singleTask = rootGroup.tasks[0];
-            result.push({
-                text: singleTask.text,
-                tooltip: singleTask.tooltip,
-                color: singleTask.color,
-                backgroundColor: singleTask.backgroundColor,
-                filePattern: singleTask.filePattern,
-                isGroup: false, // Mark as individual task
-                command: singleTask.command // Use the task's command directly
-            });
+    // Process in original order
+    for (const task of memoryStatusBarArray) {
+        if (!task.group) {
+            // Ungrouped task
+            result.push(task);
         } else {
-            // Create a group button for multiple tasks
-            result.push({
-                text: rootName,
-                tooltip: convertTooltip(`Group: ${rootName} (${rootGroup.tasks.length} tasks)`),
-                color: rootGroup.tasks[0]?.color,
-                backgroundColor: rootGroup.tasks[0]?.backgroundColor,
-                filePattern: rootGroup.tasks[0]?.filePattern,
-                isGroup: true,
-                isHierarchical: true,
-                groupPath: rootName,
-                groupTree: rootGroup,
-                groupTasks: rootGroup.tasks,
-                command: {
-                    command: ShowGroupTasksCommand,
-                    arguments: [rootGroup.tasks, rootGroup]
+            const hierarchy = parseGroupHierarchy(task.group);
+            const rootGroup = hierarchy?.parts[0];
+
+            if (rootGroup && !addedGroups.has(rootGroup)) {
+                addedGroups.add(rootGroup);
+                const groupData = tree.get(rootGroup);
+
+                if (groupData.tasks.length === 1) {
+                    // Single task group
+										// Show the individual task instead of a group button
+                    const singleTask = groupData.tasks[0];
+                    result.push({
+                        text: singleTask.text,
+                        tooltip: singleTask.tooltip,
+                        color: singleTask.color,
+                        backgroundColor: singleTask.backgroundColor,
+                        filePattern: singleTask.filePattern,
+                        isGroup: false, // Mark as individual task
+                        command: singleTask.command // Use the task's command directly
+                    });
+                } else {
+                    // Multi-task group
+                    result.push({
+                        text: rootGroup,
+                        tooltip: convertTooltip(`Group: ${rootGroup} (${groupData.tasks.length} tasks)`),
+                        color: groupData.tasks[0]?.color,
+                        backgroundColor: groupData.tasks[0]?.backgroundColor,
+                        filePattern: groupData.tasks[0]?.filePattern,
+                        isGroup: true,
+                        isHierarchical: true,
+                        groupPath: rootGroup,
+                        groupTree: groupData,
+                        groupTasks: groupData.tasks,
+                        command: {
+                            command: ShowGroupTasksCommand,
+                            arguments: [groupData.tasks, groupData]
+                        }
+                    });
                 }
-            });
+            }
         }
     }
 
