@@ -1193,35 +1193,41 @@ function showHierarchicalGroupTasks(groupTree) {
 
     if (!panel) return;
 
-    // Generate HTML for hierarchical view
+    // === NEW: one flat array that mirrors on-screen button order ===
+    const flatTasks = [];
+
+    // Generate HTML and populate flatTasks in the exact render order
     function generateTreeHTML(group, level = 0) {
         let html = '';
 
-				// Add subgroups
-				for (const [subgroupName, subgroup] of group.subgroups) {
-						html += `
-								<div class="subgroup" style="margin-left: ${level * 20}px;">
-										<button class="subgroup-header" onclick="toggleSubgroup('${subgroupName}-${level}')"
-														title="Expand/Collapse ${subgroupName}">
-												<span class="expand-icon" id="icon-${subgroupName}-${level}">▶</span>
-												<span class="subgroup-name">${subgroupName}/</span>
-										</button>
-										<div class="subgroup-content" id="content-${subgroupName}-${level}" style="display: none;">
-												${generateTreeHTML(subgroup, level + 1)}
-										</div>
-								</div>
-						`;
-				}
+        // Subgroups first (keeps your current visual order)
+        for (const [_, subgroup] of group.subgroups) {
+            const safeId = `${subgroup.name.replace(/[^a-zA-Z0-9]/g, '-')}-${level}`;
+            html += `
+                <div class="subgroup" style="margin-left: ${level * 20}px;">
+                    <button class="subgroup-header" onclick="toggleSubgroup('${safeId}')"
+                            title="Expand/Collapse ${subgroup.name}">
+                        <span class="expand-icon" id="icon-${safeId}">▶</span>
+                        <span class="subgroup-name">${subgroup.name.split('/').slice(-1)[0]}/</span>
+                    </button>
+                    <div class="subgroup-content" id="content-${safeId}" style="display: none;">
+                        ${generateTreeHTML(subgroup, level + 1)}
+                    </div>
+                </div>
+            `;
+        }
 
-        // Add direct tasks at this level
-        const directTasks = group.tasks.filter(task => {
-            const hierarchy = parseGroupHierarchy(task.group);
-            return hierarchy && hierarchy.parts.length === level + 1;
+        // Direct tasks at this level
+        // (Your build tree stores all tasks under a node; we filter "direct" ones by depth)
+        const parentDepth = group.name.split('/').length;
+        const directTasks = group.tasks.filter(t => {
+            const h = parseGroupHierarchy(t.group);
+            return h && h.parts.length === parentDepth;
         });
 
         for (const task of directTasks) {
-            const taskIndex = group.tasks.indexOf(task);
-            html += generateTaskButton(task, taskIndex, level);
+            const idx = flatTasks.push(task) - 1; // index in the global flat list
+            html += generateTaskButton(task, idx, level);
         }
 
 
@@ -1241,7 +1247,7 @@ function showHierarchicalGroupTasks(groupTree) {
             ${generateTreeHTML(groupTree)}
 
             <script>
-                ${getCommonJavaScript(groupTree.tasks, 'groupTasks')}
+                ${getCommonJavaScript(flatTasks, 'groupTasks')}
 
                 function toggleSubgroup(id) {
                     const content = document.getElementById('content-' + id);
@@ -1260,11 +1266,12 @@ function showHierarchicalGroupTasks(groupTree) {
         </html>
     `;
 
+    // === NEW: resolve clicks against the same flatTasks array ===
     setupPanelMessageHandling(panel, panelKey, {
         executeTask: (message) => {
-            const taskIndex = message.taskIndex;
-            if (taskIndex >= 0 && taskIndex < groupTree.tasks.length) {
-                const task = groupTree.tasks[taskIndex].command.arguments[0];
+            const i = message.taskIndex;
+            if (i >= 0 && i < flatTasks.length) {
+                const task = flatTasks[i].command.arguments[0];
                 runTask(task);
             }
         }
@@ -1272,6 +1279,7 @@ function showHierarchicalGroupTasks(groupTree) {
 
     autoFocusPanel(panel);
 }
+
 
 function showGroupTasks(groupTasks, groupName = 'Tasks') {
 
